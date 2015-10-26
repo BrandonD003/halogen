@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Halogen</title>
+    <style>
+      .tbl
+      {
+        width:100%;
+      }
+
+      .tbl th,td
+      {
+        padding: 0px 20px;
+      }
+    </style>
+    {% import 'macros.html' as macros %}
+
+</head>
+<body>
+
+  <!-- Top navbar -->
+  <div class="navbar navbar-static-top navbar-inverse">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
+
+        <!-- Site name -->
+        <a class="brand">Halogen</a>
+
+        <!-- Start of the nav bar content -->
+        <div class="nav-collapse">
+          <ul class="nav pull-right">
+            <li><a href="{{ url_for('index') }}">Compare Configurations</a></li>
+            <li><a href="{{ url_for('knob_tables') }}">Configurations</a></li>
+          </ul>
+        </div>
+
+      </div><!--/.container-fluid-->
+    </div><!--/.navbar-inner-->
+  </div><!--/.navbar .navbar-static-top .navbar-inverse-->
+  <!-- End navbar -->
+
+  <!-- Main area -->
+  <div class="container-fluid" style="padding-top: 15px">
+
+    <!-- Chart Controls -->
+    <div class="well" style="padding:10px 0px">
+      <div class="row-fluid" id="update_form">
+        <form name="stat_select" action="" style="margin:0px">{{ form.hidden_tag() }}
+        <!-- <table class="tbl" width="100%" cellpadding="10"> -->
+        <table class="tbl">
+          <!-- dropdown headings -->
+          <tr>
+            <th width="25%">Stat</th>
+            <th width="25%">Benchmarks</th>
+            <th width="25%">Processors</th>
+            <!-- checkboxes -->
+            <td rowspan="2"><label class="checkbox">{{ form.normalize(class="checkbox") }} Normalize</label>
+                <label class="checkbox">{{ form.average(class="checkbox") }} Average</label>
+                <label class="checkbox">{{ form.hmean(class="checkbox") }} H.Mean</label></td>
+          </tr>
+
+          <!-- dropdowns and boxes -->
+          <tr>
+            <!-- stat dropdown -->
+            <td style="padding:5px 20px 0px 10px">{{- macros.stat_dropdown(title='core.backend.ipc', stat_choices=stat_choices) }}</td>
+
+            <!-- Benchmark dropdown -->
+            <td>{{ form.benchmarks(class="selectpicker btn-block span12", multiple="multiple") }}</td>
+
+            <!-- Processors dropdown -->
+            <td>{{ form.runs(class="selectpicker btn-block span12", multiple="multiple") }}</td>
+
+            <!-- Update button -->
+            <td>{{ form.submit(class="btn btn-primary") }}</td>
+          </tr>
+        </table>
+        </form>
+
+      </div>
+    </div>
+    <!-- End Chart Controls -->
+
+    <!-- Chart Tabs -->
+    <div class="row-fluid">
+      <div class="tabbable">
+
+        <!-- Tab headings -->
+        <ul class="nav nav-tabs" id="tabs">
+          <li><a id="addChart" href="#newTab"><i class="icon-plus"></i></a></li>
+        </ul><!--/.nav -->
+        <!-- End Tab headings -->
+
+        <!-- Tab panes -->
+        <div class="tab-content" id="tabPanes">
+
+        </div>
+        <!-- End Tab Panes -->
+
+      </div>
+    </div>
+    <!-- End Chart Tabs -->
+
+  </div><!--/.container-fluid -->
+
+
+  <!-- jquery -->
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+  <!-- bootstrap -->
+  <!-- <link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet" type="text/css"/> -->
+  <!-- <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap.js"></script> -->
+  <link href="{{url_for('static', filename='bootstrap-2.3.2/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
+  <script src="{{url_for('static', filename='bootstrap-2.3.2/js/bootstrap.min.js') }}"></script>
+
+  <!-- bootstrap-select -->
+  <link href="{{url_for('static', filename='bootstrap-select/bootstrap-select.min.css') }}" rel="stylesheet" type="text/css" />
+  <script src="{{url_for('static', filename='bootstrap-select/bootstrap-select.min.js') }}"></script>
+
+  <script type="text/javascript">
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+  </script>
+
+  <!-- add chart -->
+  <script type="text/javascript">
+    var numTabs = 2;
+    $( "#addChart" ).click(function() {
+
+      var tabName = "stat_" + numTabs;
+      numTabs = numTabs + 1;
+
+      addChart(tabName);
+    });
+  </script>
+
+  <script type="text/jscript">
+    function setcheckbox(checked, optionId)
+    {
+      var dd = document.getElementById(optionId);
+      if (checked == 'True')
+        dd.checked = true;
+      else
+        dd.checked = false;
+    }
+  </script>
+
+  <script type="text/javascript">
+    // initialization code called when page is first loaded
+    $(document).ready(function() {
+
+      // initialize selectpicker
+      $('.selectpicker').selectpicker();
+
+      // initialize the selected stat
+      setStat("core.backend.ipc");
+
+      // set default chart options
+      Highcharts.setOptions({
+        chart: {
+          type: 'column'
+        },
+        title: {
+          x: -20 //center
+        },
+        xAxis: {
+          labels: {
+            rotation: -45,
+            align: 'right',
+            style: {
+              fontSize: '13px',
+              fontFamily: 'Verdana, sans-serif'
+        }}},
+        tooltip: {
+          shared: true,
+          crosshairs: false,
+          pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.label}</b><br/>'
+        },
+        legend: {
+          borderWidth: 0
+        },
+      });
+
+      // create the first chart (blank)
+      addChart("ipc");
+      $("#Update").click(function() {
+          updateChart();
+          return false;
+      });
+    });
+  </script>
+
+  <style type="text/css">
+    .chartDiv {
+      min-width: 400px;
+      height: 400px;
+      margin: 0 auto;
+    }
+  </style>
+
+  <!-- highcharts -->
+  <script src="http://code.highcharts.com/highcharts.js"></script>
+  <script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+  <script src="{{url_for('static', filename='halogen.js') }}"></script>
+
+</body>
+</html>

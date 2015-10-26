@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Halogen</title>
+    {% import 'macros.html' as macros %}
+
+    <meta charset=utf-8 />
+  </head>
+  <body>
+
+<!-- Top navbar -->
+<div class="navbar navbar-static-top navbar-inverse">
+  <div class="navbar-inner">
+    <div class="container-fluid">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+
+      <!-- Site name -->
+      <a class="brand">Halogen</a>
+
+      <!-- Start of the nav bar content -->
+      <div class="nav-collapse">
+        <ul class="nav pull-right">
+          <li><a id="compare" href="#">Compare Configurations</a></li>
+          <li><a href="{{- url_for('knob_tables') }}">Configurations</a></li>
+        </ul>
+      </div>
+
+    </div><!--/.container-fluid-->
+  </div><!--/.navbar-inner-->
+</div><!--/.navbar .navbar-static-top .navbar-inverse-->
+
+<!-- Main area -->
+<div class="container-fluid" style="padding-top: 15px">
+
+  <!-- Processor Table -->
+
+  <!-- Controls -->
+  <div class="row-fluid">
+    <div class="span6">
+      <h4>Processor Configurations</h4>
+    </div>
+    <!-- Add Processor Box -->
+    <div class="input-append pull-right">
+      <input class="span6" name="pColName" type="text" placeholder="Column Name">
+      <button class="btn" type="button" id="pAddColBtn">Add Column</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="row-fluid">
+    <div class="span12">
+    {{- macros.table(id='pTable', rows=tables['processor']) }}
+    </div>
+  </div>
+  <hr>
+
+  <!-- Core Table -->
+
+  <!-- Controls -->
+  <div class="row-fluid">
+    <div class="span6">
+      <h4> Core Configurations </h4>
+    </div>
+    <!-- Add Column Box -->
+    <div class="input-append pull-right">
+      <input class="span6" name="cColName" type="text" placeholder="Column Name">
+      <button class="btn" type="button" id="cAddColBtn">Add Column</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="row-fluid">
+    <div class="span12">
+    {{- macros.table(id='cTable', rows=tables['core']) }}
+    </div>
+  </div><!--/.row-fluid -->
+
+</div><!--/.container-fluid-->
+
+  <!-- jquery -->
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+  <!-- bootstrap -->
+  <!-- <link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet" type="text/css" /> -->
+  <!-- <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap.js"></script> -->
+  <link href="{{url_for('static', filename='bootstrap-2.3.2/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
+  <script src="{{url_for('static', filename='bootstrap-2.3.2/js/bootstrap.min.js') }}"></script>
+
+  <script type="text/javascript">
+    function addCol(tableName, colName, tableId) {
+      // get the column data from the server
+      $.getJSON('{{- url_for('get_col') }}', {
+        table: tableName,
+        colName:   colName,
+        },
+        function(data) {
+          $("#"+tableId+" tr").each(function(i,r) {
+            if (i == 0) {
+              $(this).append("<th>"+data[i]+"<a href=\"\" class=\"pull-right\"><i class=\"icon-remove\"></i></a></th>");
+            }
+            else {
+              $(this).append("<td>"+data[i]+"</td>");
+              
+            }
+          });
+      });
+    }
+
+    $(document).ready(function() {
+      // remove a column when the heading cell is clicked
+      // use delegate instead of bind so it works with injected objects
+      $('table').delegate('.icon-remove', 'click', function() {
+        var index = $(this).closest('th')[0].cellIndex;
+        $(this).closest('table').find('tr').each(function() {
+          this.removeChild(this.cells[index]);
+        });
+        return false;
+      });
+
+      // add column to pTable when button is clicked
+      $("button#pAddColBtn").bind("click", function() {
+        addCol("processor", $('input[name="pColName"]').val(), "pTable");
+        return false;
+      });
+
+      // add column to cTable when button is clicked
+      $('button#cAddColBtn').bind('click', function() {
+        addCol("core", $('input[name="cColName"]').val(), "cTable");
+        return false;
+      });
+
+      $('#compare').bind('click', function() {
+        // get pTable column names
+        var pCols = [];
+        $("#pTable th").each(function(i, h) {
+          pCols[i] = $(h).text();
+        });
+
+        // get cTable column names
+        var cCols = [];
+        $("#cTable th").each(function(i, h) {
+          cCols[i] = $(h).text();
+        });
+
+        // get the column data from the server
+        $.getJSON('{{- url_for('save_tables') }}', {
+          pCols: JSON.stringify(pCols),
+          cCols:  JSON.stringify(cCols),
+          },
+          function(data) {
+            
+            // redirect to 'halogen' page
+            window.location.href = "{{- url_for('index') }}";
+        });
+
+        return false;
+      });
+    });
+  </script>
+
+  <style type="text/css">
+    .dropdown-menu {
+      # max-height: 200px;
+      # overflow-y: auto;
+    }
+
+    .benchmark-suite {
+      font-weight: bold;
+    }
+  </style>
+
+  <script src="{{url_for('static', filename='halogen.js') }}"></script>
+
+</body>
+</html>

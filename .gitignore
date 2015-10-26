@@ -1,0 +1,4 @@
+*.pyc
+*.pid
+*.db
+final_results

@@ -1,0 +1,47 @@
+{% macro stat_dropdown(title='Stat', stat_choices) %}
+<!-- Stat dropdown -->
+<div class="btn-group span12 text-left">
+  <a class="btn btn-block dropdown-toggle" id="stat_title" data-toggle="dropdown" href="#" style="display: inline-block">{{ title }} <span class="caret"></span></a>
+  <ul class="dropdown-menu" id="menu">
+
+  {%- for k,v in stat_choices.items() recursive %}
+    {%- if v is is_dict %}
+  <li class="dropdown-submenu">
+    <a href="#">{{- k }}</a>
+    <ul class="dropdown-menu">{{- loop(v.items()) }}</ul>
+  </li>
+    {%- else %}
+  <li><a href="#" onclick="setStat('{{ v }}')">{{- k }}</a></li>
+    {%- endif %}
+  {%- endfor %}
+
+  </ul><!--/.dropdown-menu-->
+</div>
+<br>
+<br>
+<!-- End Stat dropdown -->
+{% endmacro %}
+
+<!-- table -->
+{% macro table(id, rows) %}
+<table class="table table-striped table-bordered table-condensed" id="{{- id }}">
+  <thead>
+    {%- for row in rows %}
+    <tr id="{{- loop.index0 }}">
+      {% set outer_loop = loop %}
+      {%- for col in row %}
+        {%- if outer_loop.index0 == 0 %}
+      <th>{{- col }}<a id="{{- col }}" href="" class="pull-right"><i class="icon-remove"></i></a></th>
+        {%- else %}
+      <td>{{- col }}</td>
+        {%- endif %}
+      {%- endfor %}
+    </tr>
+      {%- if loop.index0 == 0 %}
+  </thead>
+  <tbody>
+      {%- endif %}
+    {%- endfor %}
+  </tbody>
+</table>
+{% endmacro %}
