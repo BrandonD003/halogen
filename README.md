@@ -22,6 +22,8 @@ Go to http://localhost:5000 in your browser
 Notes
 -----
 
+This hasn't been tested recently. Care should be taken
+
 
 Relevant Documentation
 ----------------------
