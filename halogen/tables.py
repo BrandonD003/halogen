@@ -3,29 +3,29 @@ import db_utils
 tables = {'processor': [], 'core': []}
 
 def initialize():
-    # clear the tables
-    tables['processor'] = {}
-    tables['core'] = {}
+  # clear the tables
+  tables['processor'] = {}
+  tables['core'] = {}
 
-    # get the processors from the db
-    processors = db_utils.find('knobs', fields={'type': 'processor'})
+  # get the processors from the db
+  processors = db_utils.find('knobs', fields={'type': 'processor'})
 
-    # header row
-    tables['processor'] = [['name']]
+  # header row
+  tables['processor'] = [['name']]
 
-    # add one row for each processor
-    for p in processors:
-        tables['processor'].append([p.name])
+  # add one row for each processor
+  for p in processors:
+    tables['processor'].append([p.name])
 
-    # get the cores from the db
-    cores = db_utils.find('knobs', fields={'type': 'core'})
+  # get the cores from the db
+  cores = db_utils.find('knobs', fields={'type': 'core'})
 
-    # header row
-    tables['core'] = [['name']]
+  # header row
+  tables['core'] = [['name']]
 
-    # add one row for each core
-    for c in cores:
-        tables['core'].append([c.name])
+  # add one row for each core
+  for c in cores:
+    tables['core'].append([c.name])
 
 def set_tables(p_cols, c_cols):
     # initialize() will add these
